@@ -8,8 +8,7 @@ mongoose.set('strictQuery', false);
 
 const app = express();
 
-// Middleware
-app.use(express.json());
+// Serve Static Files (Moved to Top)
 const publicPath = path.join(__dirname, 'public');
 console.log('Attempting to serve static files from:', publicPath);
 if (fs.existsSync(publicPath)) {
@@ -19,11 +18,14 @@ if (fs.existsSync(publicPath)) {
 }
 app.use(express.static(publicPath, { index: 'signup.html' }));
 
-// Debug Middleware
+// Debug Middleware for All Requests
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.url}`);
   next();
 });
+
+// Middleware for JSON
+app.use(express.json());
 
 // Test Route
 app.get('/test', (req, res) => {
