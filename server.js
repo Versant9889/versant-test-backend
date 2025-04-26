@@ -8,29 +8,8 @@ mongoose.set('strictQuery', false);
 
 const app = express();
 
-// Serve Static Files with Detailed Logging
-const publicPath = path.join(__dirname, 'public');
-console.log('Attempting to serve static files from:', publicPath);
-if (fs.existsSync(publicPath)) {
-  console.log('Public folder exists. Listing contents:', fs.readdirSync(publicPath));
-} else {
-  console.log('Public folder does NOT exist at:', publicPath);
-}
-
-// Custom Static Middleware for Debugging
-app.use((req, res, next) => {
-  console.log(`Checking static file for: ${req.url}`);
-  const filePath = path.join(publicPath, req.url === '/' ? 'signup.html' : req.url);
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-    console.log(`Serving static file: ${filePath}`);
-    return res.sendFile(filePath);
-  }
-  console.log(`Static file not found: ${filePath}`);
-  next();
-});
-
-// Fallback Static Middleware
-app.use(express.static(publicPath, { index: 'signup.html' }));
+// Middleware for JSON
+app.use(express.json());
 
 // Debug Middleware for All Requests
 app.use((req, res, next) => {
@@ -38,8 +17,47 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware for JSON
-app.use(express.json());
+// Define Public Path
+const publicPath = path.join(__dirname, 'public');
+console.log('Public folder path:', publicPath);
+if (fs.existsSync(publicPath)) {
+  console.log('Public folder exists. Listing contents:', fs.readdirSync(publicPath));
+} else {
+  console.log('Public folder does NOT exist at:', publicPath);
+}
+
+// Serve signup.html for Root
+app.get('/', (req, res) => {
+  const filePath = path.join(publicPath, 'signup.html');
+  console.log('Serving signup.html from:', filePath);
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).send('signup.html not found in public folder');
+  }
+});
+
+// Serve signup.html Directly
+app.get('/signup.html', (req, res) => {
+  const filePath = path.join(publicPath, 'signup.html');
+  console.log('Serving signup.html from:', filePath);
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).send('signup.html not found');
+  }
+});
+
+// Serve login.html Directly
+app.get('/login.html', (req, res) => {
+  const filePath = path.join(publicPath, 'login.html');
+  console.log('Serving login.html from:', filePath);
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).send('login.html not found');
+  }
+});
 
 // Test Route
 app.get('/test', (req, res) => {
@@ -59,16 +77,6 @@ app.get('/debug-files', (req, res) => {
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/questions', require('./routes/questions'));
-
-// Default Route
-app.get('/', (req, res) => {
-  console.log('Serving signup.html from:', path.join(publicPath, 'signup.html'));
-  if (fs.existsSync(path.join(publicPath, 'signup.html'))) {
-    res.sendFile(path.join(publicPath, 'signup.html'));
-  } else {
-    res.status(404).send('signup.html not found in public folder');
-  }
-});
 
 // Catch-all
 app.use((req, res) => {
