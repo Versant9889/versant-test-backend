@@ -8,7 +8,7 @@ mongoose.set('strictQuery', false);
 
 const app = express();
 
-// Serve Static Files (Moved to Top)
+// Serve Static Files with Detailed Logging
 const publicPath = path.join(__dirname, 'public');
 console.log('Attempting to serve static files from:', publicPath);
 if (fs.existsSync(publicPath)) {
@@ -16,6 +16,20 @@ if (fs.existsSync(publicPath)) {
 } else {
   console.log('Public folder does NOT exist at:', publicPath);
 }
+
+// Custom Static Middleware for Debugging
+app.use((req, res, next) => {
+  console.log(`Checking static file for: ${req.url}`);
+  const filePath = path.join(publicPath, req.url === '/' ? 'signup.html' : req.url);
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    console.log(`Serving static file: ${filePath}`);
+    return res.sendFile(filePath);
+  }
+  console.log(`Static file not found: ${filePath}`);
+  next();
+});
+
+// Fallback Static Middleware
 app.use(express.static(publicPath, { index: 'signup.html' }));
 
 // Debug Middleware for All Requests
