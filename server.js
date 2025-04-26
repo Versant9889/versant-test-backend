@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const mongoose = require('mongoose');
 mongoose.set('strictQuery', false);
 
@@ -9,7 +10,14 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+const publicPath = path.join(__dirname, 'public');
+console.log('Attempting to serve static files from:', publicPath); // Debug log
+if (fs.existsSync(publicPath)) {
+  console.log('Public folder exists. Listing contents:', fs.readdirSync(publicPath));
+} else {
+  console.log('Public folder does NOT exist at:', publicPath);
+}
+app.use(express.static(publicPath));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -32,7 +40,16 @@ mongoose.connect(dbUrl)
 
 // Default Route
 app.get('/', (req, res) => {
-  res.redirect('/signup.html'); // Redirect to signup.html
+  console.log('Serving signup.html from:', path.join(publicPath, 'signup.html'));
+  res.sendFile(path.join(publicPath, 'signup.html'));
+});
+
+// Debug route to list files
+app.get('/debug-files', (req, res) => {
+  fs.readdir(publicPath, (err, files) => {
+    if (err) return res.status(500).send('Error reading public folder: ' + err.message);
+    res.json({ files, path: publicPath });
+  });
 });
 
 // Start Server
