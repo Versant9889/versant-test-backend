@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
+mongoose.set('strictQuery', false);
 
 const app = express();
 
@@ -28,6 +29,11 @@ mongoose.connect(dbUrl)
     console.error('MongoDB connection error:', err);
     process.exit(1);
   });
+
+// Default Route
+app.get('/', (req, res) => {
+  res.redirect('/signup.html'); // Redirect to signup.html
+});
 
 // Start Server
 const PORT = process.env.PORT || 3000;
