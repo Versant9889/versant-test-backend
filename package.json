@@ -1,0 +1,18 @@
+{
+  "name": "versant-test-simulator-fresh",
+  "version": "1.0.0",
+  "description": "Fresh setup for Versant Writing Test Simulator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^6.3.0",
+    "jsonwebtoken": "^8.5.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
