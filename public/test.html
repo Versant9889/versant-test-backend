@@ -1,70 +1,94 @@
-<script>
-    let questions = [];
-    let currentIndex = 0;
-    const token = localStorage.getItem('token'); // Assuming token is stored after login
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Versant Writing Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2 { color: #333; }
+        #questions { margin-top: 20px; }
+        .question { margin-bottom: 15px; }
+        button { padding: 10px 20px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Versant Writing Test - Part A</h2>
+    <p>Please type the sentence exactly as shown.</p>
+    <div id="questions"></div>
+    <div id="message"></div>
+    <button id="nextBtn" style="display: none;" onclick="nextQuestion()">Next</button>
 
-    // Fetch Questions
-    async function fetchQuestions() {
-        console.log('Token:', token); // Debug token
-        if (!token) {
-            document.getElementById('message').innerText = 'No token found. Please log in first.';
-            return;
-        }
+    <script>
+        let questions = [];
+        let currentIndex = 0;
+        const token = localStorage.getItem('token'); // Retrieve token
 
-        try {
-            const response = await fetch('/api/questions', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        // Fetch Questions
+        async function fetchQuestions() {
+            console.log('Token being sent:', token); // Debug token
+            if (!token) {
+                document.getElementById('message').innerText = 'No token found. Please log in first.';
+                return;
             }
-            const data = await response.json();
-            questions = data.partA.questions; // Start with Part A
+
+            try {
+                const response = await fetch('/api/questions', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                const data = await response.json();
+                questions = data.partA.questions; // Start with Part A
+                displayQuestion();
+            } catch (err) {
+                document.getElementById('message').innerText = 'Error fetching questions: ' + err.message;
+                console.error('Fetch error:', err); // Debug error
+            }
+        }
+
+        // Display Current Question
+        function displayQuestion() {
+            const questionsDiv = document.getElementById('questions');
+            if (currentIndex < questions.length) {
+                const q = questions[currentIndex];
+                questionsDiv.innerHTML = `
+                    <div class="question">
+                        <p><strong>Question ${currentIndex + 1}:</strong> ${q.question}</p>
+                        <input type="text" id="answer-${q._id}" placeholder="Type the sentence here">
+                    </div>
+                `;
+                document.getElementById('nextBtn').style.display = 'block';
+            } else {
+                questionsDiv.innerHTML = '<p>Test completed!</p>';
+                document.getElementById('nextBtn').style.display = 'none';
+            }
+        }
+
+        // Move to Next Question
+        function nextQuestion() {
+            currentIndex++;
             displayQuestion();
-        } catch (err) {
-            document.getElementById('message').innerText = 'Error fetching questions: ' + err.message;
-            console.error('Fetch error:', err); // Debug error
         }
-    }
 
-    // Display Current Question
-    function displayQuestion() {
-        const questionsDiv = document.getElementById('questions');
-        if (currentIndex < questions.length) {
-            const q = questions[currentIndex];
-            questionsDiv.innerHTML = `
-                <div class="question">
-                    <p><strong>Question ${currentIndex + 1}:</strong> ${q.question}</p>
-                    <input type="text" id="answer-${q._id}" placeholder="Type the sentence here">
-                </div>
-            `;
-            document.getElementById('nextBtn').style.display = 'block';
+        // Check for Token and Fetch Questions
+        if (!token) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tempToken = urlParams.get('token');
+            if (tempToken) {
+                localStorage.setItem('token', tempToken);
+                fetchQuestions();
+            } else {
+                document.getElementById('message').innerText = 'Please log in first or provide a token in the URL (e.g., ?token=your_token).';
+            }
         } else {
-            questionsDiv.innerHTML = '<p>Test completed!</p>';
-            document.getElementById('nextBtn').style.display = 'none';
-        }
-    }
-
-    // Move to Next Question
-    function nextQuestion() {
-        currentIndex++;
-        displayQuestion();
-    }
-
-    // Store Token from Login (Temporary for Testing)
-    if (!token) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const tempToken = urlParams.get('token');
-        if (tempToken) {
-            localStorage.setItem('token', tempToken);
             fetchQuestions();
-        } else {
-            document.getElementById('message').innerText = 'Please log in first or provide a token in the URL (e.g., ?token=your_token).';
         }
-    } else {
-        fetchQuestions();
-    }
-</script>
+    </script>
+</body>
+</html>
