@@ -26,7 +26,7 @@ if (fs.existsSync(publicPath)) {
   console.log('Public folder does NOT exist at:', publicPath);
 }
 
-// Serve signup.html for Root
+// Serve Static Files Directly
 app.get('/', (req, res) => {
   const filePath = path.join(publicPath, 'signup.html');
   console.log('Serving signup.html from:', filePath);
@@ -37,18 +37,6 @@ app.get('/', (req, res) => {
   }
 });
 
-// Serve signup.html Directly
-app.get('/signup.html', (req, res) => {
-  const filePath = path.join(publicPath, 'signup.html');
-  console.log('Serving signup.html from:', filePath);
-  if (fs.existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    res.status(404).send('signup.html not found');
-  }
-});
-
-// Serve login.html Directly
 app.get('/login.html', (req, res) => {
   const filePath = path.join(publicPath, 'login.html');
   console.log('Serving login.html from:', filePath);
@@ -56,6 +44,16 @@ app.get('/login.html', (req, res) => {
     res.sendFile(filePath);
   } else {
     res.status(404).send('login.html not found');
+  }
+});
+
+app.get('/test.html', (req, res) => {
+  const filePath = path.join(publicPath, 'test.html');
+  console.log('Serving test.html from:', filePath);
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).send('test.html not found');
   }
 });
 
@@ -75,12 +73,13 @@ app.get('/debug-files', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', require('./routes/auth'));
+console.log('Registering /api/questions routes...');
 app.use('/api/questions', require('./routes/questions'));
 
 // Catch-all
 app.use((req, res) => {
   console.log('Catch-all route hit for:', req.url);
+  console.log('Request headers:', req.headers);
   res.status(404).send('Not Found');
 });
 
